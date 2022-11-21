@@ -9,12 +9,13 @@
 
 /* SOLUTION */
 
-// Importing Core Modules
-const fs = require('fs');
-
 // Importing Third-Party Modules
 const express = require('express');
 const bodyParser = require('body-parser');
+
+// Importing Local Modules
+const userRoutes = require('./routes/user')
+const msgRoutes = require('./routes/msg')
 
 // Invoking Express JS for chatApp
 const chatApp = express();
@@ -22,52 +23,9 @@ const chatApp = express();
 // Invoking body parsing functionality for chatApp
 chatApp.use(bodyParser.urlencoded({ extended: false }));
 
-// Showing the username form on "/login" and storing the user's input in the local storage
-chatApp.get('/login', (req, res, next) => {
-    res.send(`  
-    <form action="/login" method="POST" onSubmit="localStorage.setItem('username', document.getElementById('username').value)">
-        <label for="username">Username:</lable>
-        <input type="text" name="username" id="username">
-        <button type="submit">SUBMIT</button>
-    </form>
-    `);
-});
-
-// Redirecting the user to "/"
-chatApp.post('/login', (req, res, next) => {
-    res.redirect('/');
-});
-
-// Showing the message form on "/"; Also, reading data from "chat-history.txt" file and displaying it above form
-chatApp.get('/', (req, res, next) => {
-    fs.readFile('chat-history.txt', (err, data) => {
-        if (err) {
-            data = 'No Messages Found';
-        }
-        res.send(`  
-        <h3>${data}</h3>
-        <form action="/" method="POST" onSubmit="document.getElementById('username').value = localStorage.getItem('username')">
-            <label for="message">Message:</label>
-            <input type="text" name="message" id="message">
-            <input type="hidden" name="username" id="username">
-            <button type="submit">SEND</button>
-        </form>
-        `);
-    });
-});
-
-// Storing the username and message in "chat-history.txt" file
-chatApp.post('/', (req, res, next) => {
-    const userMsg = `${req.body.username}: ${req.body.message}`;
-    fs.writeFile('chat-history.txt', userMsg, { flag: 'a' }, (err) => {
-        if (err) {
-            console.log(err);
-        }
-        else {
-            res.redirect('/');
-        }
-    });
-});
+// Routing Logic
+chatApp.use(userRoutes);
+chatApp.use(msgRoutes);
 
 // Listening for connections
 chatApp.listen(3000);
